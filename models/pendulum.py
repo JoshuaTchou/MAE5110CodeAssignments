@@ -41,3 +41,11 @@ def calculate_energy(state, params):
     kinetic_energy = 0.5 * mass * (length * angular_velocity) ** 2
     potential_energy = mass * gravity * length * np.cos(angle)
     return kinetic_energy, potential_energy
+
+
+def detect_event(t, state, params):
+    return False
+
+
+def handle_event(t, state, params):
+    return state
