@@ -8,21 +8,55 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-def generate_params():
-    pass
+def generate_params(alpha = np.pi / 7.5, ankle_torque = 0):
+    params = {
+        "gravity": 9.81,  # gravity m/s^2)
+        "length": 1,  # rod length (m)
+        "mass": 1,  # point mass at end of rod (kg)
+        "angle_of_attack": alpha,
+        "incline": 0.06,  # slope angle
+        "ankle_torque": ankle_torque
+    }
+    return params
 
 
 def dynamics(t, state, params):
-    # TODO: implement the state derivative.
-    return np.array([0.0, 0.0])
+    gravity = params["gravity"]
+    length = params["length"]
+    mass = params["mass"]
+    ankle_torque = params["ankle_torque"]
+
+    angle = state[0]
+    angular_velocity = state[1]
+
+    angular_acceleration = (
+        mass * gravity * length * np.sin(angle)
+    ) / (mass * length**2) + ankle_torque
+
+    state_derivative = np.array([angular_velocity, angular_acceleration])
+    return state_derivative
 
 
 def event_guard(previous_state, next_state, params):
-    pass
+    angle = next_state[0]
+    alpha = params["angle_of_attack"]
+    gamma = params["incline"]
+    return (angle > alpha + gamma) or (angle < -alpha + gamma)
 
 
 def event_dynamics(state, params):
-    pass
+    angle = state[0]
+    ang_vel = state[1]
+    alpha = params["angle_of_attack"]
+    gamma = params["incline"]
+
+    new_ang_vel = ang_vel * np.cos(2 * alpha)
+    if angle > alpha + gamma:
+        new_angle = angle - 2 * alpha
+        return np.array([new_angle, new_ang_vel])
+    else:
+        new_angle = angle + 2 * alpha
+        return np.array([new_angle, new_ang_vel])
 
 
 def calculate_energy(state, params):
