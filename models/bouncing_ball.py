@@ -41,7 +41,7 @@ def detect_event(t, state, params):
 
 
 # Return the updated state after the collision
-def handle_event(t, state, params):
+def calculate_state_after_event(t, state, params):
     restitution_coeff = params["restitution_coeff"]
     pos = state[0]
     vel = state[1]

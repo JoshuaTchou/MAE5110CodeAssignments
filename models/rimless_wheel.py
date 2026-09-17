@@ -5,26 +5,26 @@ def dynamics(t, state, params):
     gravity = params["gravity"]
     length = params["length"]
     mass = params["mass"]
-    damping_coeff = params["damping_coeff"]
 
     angle = state[0]
     angular_velocity = state[1]
 
     angular_acceleration = (
         mass * gravity * length * np.sin(angle)
-        - damping_coeff * angular_velocity  # <-- DAMPING TERM
     ) / (mass * length**2)
 
     state_derivative = np.array([angular_velocity, angular_acceleration])
     return state_derivative
 
 
-def generate_params():
+def generate_params(num_spokes = 8):
     params = {
         "gravity": 9.81,  # gravity m/s^2)
         "length": 1,  # rod length (m)
         "mass": 1,  # point mass at end of rod (kg)
-        "damping_coeff": 0.1,  # damping coefficient (kg*m^2/s)
+        "num_spokes": num_spokes,
+        "alpha": (2 * np.pi) / (2 * num_spokes),
+        "gamma": (1/8) * np.pi  # slope angle
     }
     return params
 
@@ -44,8 +44,18 @@ def calculate_energy(state, params):
 
 
 def detect_event(t, state, params):
-    return False
+    angle = state[0]
+    return (angle > params["alpha"] + params["gamma"]) or (angle < -params["alpha"] + params["gamma"])
 
 
 def calculate_state_after_event(t, state, params):
-    return state
+    angle = state[0]
+    ang_vel = state[1]
+
+    new_ang_vel = ang_vel * np.cos(2 * params["alpha"])
+    if angle > params["alpha"] + params["gamma"]:
+        new_angle = angle - 2 * params["alpha"]
+        return np.array([new_angle, new_ang_vel])
+    else:
+        new_angle = angle + 2 * params["alpha"]
+        return np.array([new_angle, new_ang_vel])
