@@ -31,7 +31,7 @@ def dynamics(t, state, params):
 
     angular_acceleration = (
         mass * gravity * length * np.sin(angle)
-    ) / (mass * length**2) + ankle_torque
+    ) / (mass * length**2) + (ankle_torque / (mass * length))
 
     state_derivative = np.array([angular_velocity, angular_acceleration])
     return state_derivative

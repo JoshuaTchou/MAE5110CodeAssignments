@@ -10,7 +10,30 @@ from models import inverted_pendulum_walker as model
 # Fixed controls for this visualization example.
 params = model.generate_params()
 
-initial_state = np.array([0.0, 3.0])
+
+# Control
+
+# Choose spoke angle: returns the modified params dict
+def calculate_spoke_angle(t, state, params):
+    return params
+
+# Choose ankle torque returns the modified params dict
+def calculate_ankle_torque(t, state, params):
+    # Linearize about upright eq. point
+    # ddtheta = (g/L)*theta + ((-2g/L)*theta - b*dtheta)) = (-g/L)*theta - b*dtheta
+    m = params["mass"]
+    g = params["gravity"]
+    l = params["length"]
+    b = 0.1     # damping parameter
+
+    angle = state[0]
+    ang_vel = state[1]
+    target_torque = ((-2*g/l) * angle - b * ang_vel) * m * l
+    params["ankle_torque"] = np.clip(target_torque, -0.1*m*g*l, 0.05*m*g*l)
+    return params
+
+
+initial_state = np.array([0.1, 0.0])
 timestep = 1e-4
 sim_time = 3.0
 desired_number_of_steps = 3
@@ -24,6 +47,7 @@ completed_steps = 0
 # Simulation loop. Replace this Euler step with your own integrator as needed.
 for step, t in enumerate(time_traj[:-1]):
     state = state_traj[:, step]
+    params = calculate_ankle_torque(t, state, params)
     next_state = integrator.take_step(t=t, state=state, params=params, model=model, timestep=timestep)
 
     if model.event_guard(state, next_state, params):
